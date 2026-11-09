@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gymbooking
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gymbooking
+  template:
+    metadata:
+      labels:
+        app: gymbooking
+    spec:
+      containers:
+        - name: gymbooking
+          image: arslanebest/gymbooking:1.0
+          ports:
+            - containerPort: 8080
