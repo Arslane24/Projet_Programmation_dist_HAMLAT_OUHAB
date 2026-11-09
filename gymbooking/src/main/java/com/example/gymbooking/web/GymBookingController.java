@@ -10,12 +10,15 @@ import com.example.gymbooking.entity.Reservation;
 import com.example.gymbooking.entity.Session;
 import com.example.gymbooking.service.GymBookingException;
 import com.example.gymbooking.service.GymBookingService;
+import com.example.gymbooking.service.MemberInactiveException;
+import com.example.gymbooking.service.MemberNotFoundException;
 import com.example.gymbooking.service.SessionNotFoundException;
 
 /**
  * Couche web : expose les services REST et traduit les erreurs métier en codes HTTP.
  */
 @RestController
+@CrossOrigin
 public class GymBookingController {
 	private final GymBookingService gymBookingService;
 
@@ -50,7 +53,7 @@ public class GymBookingController {
 
 		if (book) {
 			if (reservation == null) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Member name is required in the body");
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Member id is required in the body");
 			}
 			gymBookingService.book(sessionCode, reservation);
 		} else {
@@ -58,15 +61,15 @@ public class GymBookingController {
 		}
 	}
 
-	@ExceptionHandler(SessionNotFoundException.class)
+	@ExceptionHandler({ SessionNotFoundException.class, MemberNotFoundException.class })
 	@ResponseStatus(HttpStatus.NOT_FOUND)
-	public String handleNotFound(SessionNotFoundException e) {
+	public String handleNotFound(RuntimeException e) {
 		return e.getMessage();
 	}
 
-	@ExceptionHandler(GymBookingException.class)
+	@ExceptionHandler({ GymBookingException.class, MemberInactiveException.class })
 	@ResponseStatus(HttpStatus.CONFLICT)
-	public String handleConflict(GymBookingException e) {
+	public String handleConflict(RuntimeException e) {
 		return e.getMessage();
 	}
 }

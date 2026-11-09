@@ -1,12 +1,12 @@
-package com.example.gymbooking;
+package com.example.memberservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class GymBookingApplication {
+public class MemberServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GymBookingApplication.class, args);
+		SpringApplication.run(MemberServiceApplication.class, args);
 	}
 }
