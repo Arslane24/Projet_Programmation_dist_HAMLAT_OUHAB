@@ -1,12 +1,21 @@
 package com.example.memberservice.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
 /**
- * Un adhérent de la salle de sport.
+ * Un adhérent de la salle de sport, persisté en base MySQL.
  * Exemple JSON : { "id" : 1, "name" : "Alice Martin", "email" : "alice@mail.com", "activeSubscription" : true }
  */
+@Entity
 public class Member {
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
+
 	private String name;
 	private String email;
 	private boolean activeSubscription;
@@ -14,8 +23,7 @@ public class Member {
 	public Member() {
 	}
 
-	public Member(long id, String name, String email, boolean activeSubscription) {
-		this.id = id;
+	public Member(String name, String email, boolean activeSubscription) {
 		this.name = name;
 		this.email = email;
 		this.activeSubscription = activeSubscription;

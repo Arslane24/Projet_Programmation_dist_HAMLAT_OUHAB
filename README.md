@@ -13,27 +13,32 @@ Navigateur (React)
               └──> appelle member-service pour valider chaque réservation
 ```
 
-- **member-service** : CRUD des adhérents (`Member`), vérifie si leur abonnement est actif.
-- **gymbooking** : gère les séances (`Session`) et les réservations (`Reservation`). Avant de confirmer une réservation, il appelle `member-service` en REST pour vérifier que le membre existe et a un abonnement actif.
+- **member-service** : CRUD des adhérents (`Member`), vérifie si leur abonnement est actif. Données persistées en **MySQL** (Spring Data JPA).
+- **gymbooking** : gère les séances (`Session`) et les réservations (`Reservation`). Avant de confirmer une réservation, il appelle `member-service` en REST pour vérifier que le membre existe et a un abonnement actif. Données en mémoire.
 - **frontend** (dans `gymbooking/frontend`) : interface React qui consomme les deux APIs.
 
-Chaque service suit la même structure : `entity` / `service` (+ exceptions custom) / `web`, données en mémoire (pas de base de données).
+Chaque service suit la même structure : `entity` / `service` (+ exceptions custom) / `web`.
 
 ## Lancer le projet en local
 
-### 1. member-service (port 8081)
+### 1. MySQL (requis pour member-service)
+```
+docker run -d --name mysql-member -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=memberdb -p 3307:3306 mysql:8.0
+```
+
+### 2. member-service (port 8081)
 ```
 cd member-service
 ./gradlew bootRun
 ```
 
-### 2. gymbooking (port 8080)
+### 3. gymbooking (port 8080)
 ```
 cd gymbooking
 ./gradlew bootRun
 ```
 
-### 3. frontend (port 5173)
+### 4. frontend (port 5173)
 ```
 cd gymbooking/frontend
 npm install
@@ -54,19 +59,40 @@ docker build -t gymbooking .
 docker run -p 8080:8080 gymbooking
 ```
 
-Image gymbooking publiée sur Docker Hub : [arslanebest/gymbooking](https://hub.docker.com/r/arslanebest/gymbooking)
+Images publiées sur Docker Hub :
+- [arslanebest/gymbooking](https://hub.docker.com/r/arslanebest/gymbooking)
+- [arslanebest/member-service](https://hub.docker.com/r/arslanebest/member-service)
 
 ## Avec Kubernetes (Minikube)
 
-Manifestes dans `gymbooking/k8s/` : `deployment.yaml`, `service.yaml`, `ingress.yaml`.
+Manifestes dans `gymbooking/k8s/` et `member-service/k8s/` (incluant MySQL : `mysql-secret.yaml`, `mysql-pvc.yaml`, `mysql-deployment.yaml`, `mysql-service.yaml`).
 
 ```
 minikube start
 minikube addons enable ingress
+
+# MySQL (pour member-service)
+kubectl apply -f member-service/k8s/mysql-secret.yaml
+kubectl apply -f member-service/k8s/mysql-pvc.yaml
+kubectl apply -f member-service/k8s/mysql-deployment.yaml
+kubectl apply -f member-service/k8s/mysql-service.yaml
+
+# member-service
+kubectl apply -f member-service/k8s/deployment.yaml
+kubectl apply -f member-service/k8s/service.yaml
+
+# gymbooking (appelle member-service via le DNS interne "member-service")
 kubectl apply -f gymbooking/k8s/deployment.yaml
 kubectl apply -f gymbooking/k8s/service.yaml
 kubectl apply -f gymbooking/k8s/ingress.yaml
 ```
+
+Ajouter dans le fichier hosts (`C:\Windows\System32\drivers\etc\hosts`) :
+```
+127.0.0.1 gymbooking.local
+127.0.0.1 member.local
+```
+Puis lancer `minikube tunnel` (terminal admin, à laisser ouvert).
 
 ## Endpoints
 
